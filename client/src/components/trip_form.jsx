@@ -5,25 +5,30 @@ function Trip_form( {onTripData}) {
     const [country, setCountry] = useState('');
     const [typeTrip, setTypeTrip] = useState('');
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
-        const trip_data = {
-            country, typeTrip, 
-            routes: [
-                { name: 'Route 1', distance: 100, pointsOfInterest: ['Point A', 'Point B'] },
-                { name: 'Route 2', distance: 120, pointsOfInterest: ['Point C', 'Point D'] },
-                { name: 'Route 3', distance: 90, pointsOfInterest: ['Point E', 'Point F'] },
-            ],
-        };
-
-        onTripData(trip_data);
+        try {
+          const response = await fetch('/api/get-trip-data', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ country, typeTrip }),
+          });
+    
+          const trip_data = await response.json();
+          onTripData(trip_data);
+        } catch (error) {
+          console.error('Error fetching trip data:', error);
+        }
     };
 
 
 
 return (
     <form onSubmit={handleSubmit}>
+   <h2>Choose how you want your trip to be</h2>
         <label>
             Country: 
             <input type="text"

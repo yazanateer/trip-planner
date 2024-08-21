@@ -5,6 +5,12 @@
   margin: 0;
 }
 
+h2 {
+  margin-bottom: 10px;
+  font-size: 1.2em;
+  color: #333;
+}
+
 
 header{
   background-color: #273b63;
