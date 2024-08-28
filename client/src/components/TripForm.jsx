@@ -64,17 +64,62 @@ const TripForm = () => {
     }
   };
 
+  // const extractCoordinates = (text) => {
+  //   const coordinatePairs = [];
+  //   const regex = /([0-9]+\.[0-9]+)° N, ([0-9]+\.[0-9]+)° E/g;
+  //   let match;
+
+  //   while ((match = regex.exec(text)) !== null) {
+  //     coordinatePairs.push([parseFloat(match[1]), parseFloat(match[2])]);
+  //   }
+
+  //   return coordinatePairs;
+  // };
+
+  // const extractCoordinates = (text) => {
+  //   const coordinatePairs = [];
+  //   // Regular expression to match latitude and longitude with N/S and E/W directions
+  //   const regex = /([0-9]+\.[0-9]+)°\s*([NS]),\s*([0-9]+\.[0-9]+)°\s*([EW])/g;
+  //   let match;
+  
+  //   while ((match = regex.exec(text)) !== null) {
+  //     let latitude = parseFloat(match[1]);
+  //     let longitude = parseFloat(match[3]);
+  
+  //     // Adjust sign based on N/S and E/W
+  //     if (match[2] === 'S') latitude = -latitude;
+  //     if (match[4] === 'W') longitude = -longitude;
+  
+  //     coordinatePairs.push([latitude, longitude]);
+  //   }
+  
+  //   return coordinatePairs;
+  // };
+
   const extractCoordinates = (text) => {
     const coordinatePairs = [];
-    const regex = /([0-9]+\.[0-9]+)° N, ([0-9]+\.[0-9]+)° E/g;
+    
+    // Regular expression to match coordinates with optional directional indicators and negative numbers
+    const regex = /([-+]?[0-9]+\.[0-9]+)°?\s*([NS])?,?\s*([-+]?[0-9]+\.[0-9]+)°?\s*([EW])?/g;
     let match;
-
+  
     while ((match = regex.exec(text)) !== null) {
-      coordinatePairs.push([parseFloat(match[1]), parseFloat(match[2])]);
+      let latitude = parseFloat(match[1]);
+      let longitude = parseFloat(match[3]);
+  
+      // Adjust latitude based on N/S if provided
+      if (match[2] === 'S') latitude = -latitude;
+      // Adjust longitude based on E/W if provided
+      if (match[4] === 'W') longitude = -longitude;
+  
+      coordinatePairs.push([latitude, longitude]);
     }
-
+  
     return coordinatePairs;
   };
+
+
+
 
   const createPolygonCoordinates = (center, offset = 0.01) => {
     const [lat, lon] = center;
