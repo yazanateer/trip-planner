@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const TripForm = () => {
   const [country, setCountry] = useState('');
   const [tripType, setTripType] = useState('car');
   const [tripImage, setTripImage] = useState(null);
   const [zonesText, setZonesText] = useState('');
+  const [coordinates, setCoordinates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -14,6 +17,7 @@ const TripForm = () => {
     setError('');
     setTripImage(null);
     setZonesText('');
+    setCoordinates([]);
 
     try {
       // Request to generate the zones description
@@ -30,7 +34,12 @@ const TripForm = () => {
       }
 
       const zonesData = await zonesResponse.json();
-      setZonesText(zonesData.zones.join('\n'));
+      const zonesText = zonesData.zones.join('\n');
+      setZonesText(zonesText);
+
+      // Extracting the coordinates
+      const extractedCoordinates = extractCoordinates(zonesText);
+      setCoordinates(extractedCoordinates);
 
       // Request to generate the image
       const imageResponse = await fetch('http://localhost:5000/generate-trip', {
@@ -53,6 +62,18 @@ const TripForm = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const extractCoordinates = (text) => {
+    const coordinatePairs = [];
+    const regex = /([0-9]+\.[0-9]+)° N, ([0-9]+\.[0-9]+)° E/g;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      coordinatePairs.push([parseFloat(match[1]), parseFloat(match[2])]);
+    }
+
+    return coordinatePairs;
   };
 
   return (
@@ -93,6 +114,26 @@ const TripForm = () => {
           <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
             {zonesText}
           </pre>
+        </div>
+      )}
+
+      {coordinates.length > 0 && (
+        <div>
+          <h2>Map of the Trip</h2>
+          <MapContainer style={{ height: "400px", width: "100%" }} center={coordinates[0]} zoom={10}>
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            <Polyline positions={coordinates} color="blue" />
+            {coordinates.map((coordinate, index) => (
+              <Marker key={index} position={coordinate}>
+                <Popup>
+                  Point {index + 1}: {coordinate[0]}, {coordinate[1]}
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
         </div>
       )}
     </div>
