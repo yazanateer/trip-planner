@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Circle, Polygon, Rectangle, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const TripForm = () => {
@@ -76,6 +76,24 @@ const TripForm = () => {
     return coordinatePairs;
   };
 
+  const createPolygonCoordinates = (center, offset = 0.01) => {
+    const [lat, lon] = center;
+    return [
+      [lat - offset, lon - offset],
+      [lat - offset, lon + offset],
+      [lat + offset, lon + offset],
+      [lat + offset, lon - offset],
+    ];
+  };
+
+  const createRectangleBounds = (center, offset = 0.01) => {
+    const [lat, lon] = center;
+    return [
+      [lat - offset, lon - offset],
+      [lat + offset, lon + offset],
+    ];
+  };
+
   return (
     <div>
       <form onSubmit={handleSubmit}>
@@ -125,14 +143,37 @@ const TripForm = () => {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-            <Polyline positions={coordinates} color="blue" />
-            {coordinates.map((coordinate, index) => (
-              <Marker key={index} position={coordinate}>
-                <Popup>
-                  Point {index + 1}: {coordinate[0]}, {coordinate[1]}
-                </Popup>
-              </Marker>
-            ))}
+
+            {/* Draw Circle for the first zone */}
+            {coordinates.length > 0 && (
+              <Circle
+                center={coordinates[0]}
+                radius={500} // Radius in meters
+                color="red"
+              >
+                <Popup>Starting Point: {coordinates[0][0]}, {coordinates[0][1]}</Popup>
+              </Circle>
+            )}
+
+            {/* Draw Polygon for the second zone */}
+            {coordinates.length > 1 && (
+              <Polygon
+                positions={createPolygonCoordinates(coordinates[1])}
+                color="green"
+              >
+                <Popup>Second Zone: {coordinates[1][0]}, {coordinates[1][1]}</Popup>
+              </Polygon>
+            )}
+
+            {/* Draw Rectangle for the third zone */}
+            {coordinates.length > 2 && (
+              <Rectangle
+                bounds={createRectangleBounds(coordinates[2])}
+                color="blue"
+              >
+                <Popup>Third Zone: {coordinates[2][0]}, {coordinates[2][1]}</Popup>
+              </Rectangle>
+            )}
           </MapContainer>
         </div>
       )}
