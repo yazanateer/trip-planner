@@ -1,25 +1,58 @@
 import React, { useState } from 'react';
-import TripDisplay from './TripDisplay';
 
 const TripForm = () => {
   const [country, setCountry] = useState('');
   const [tripType, setTripType] = useState('car');
-  const [tripData, setTripData] = useState(null);
+  const [tripImage, setTripImage] = useState(null);
+  const [zonesText, setZonesText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
+    setTripImage(null);
+    setZonesText('');
 
-    // Replace with your API call to the backend to generate the trip
-    const response = await fetch('http://localhost:5000/generate-trip', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ country, tripType }),
-    });
+    try {
+      // Request to generate the zones description
+      const zonesResponse = await fetch('http://localhost:5000/generate-zones', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ country, tripType }),
+      });
 
-    const data = await response.json();
-    setTripData(data);
+      if (!zonesResponse.ok) {
+        throw new Error('Failed to generate zones');
+      }
+
+      const zonesData = await zonesResponse.json();
+      setZonesText(zonesData.zones.join('\n'));
+
+      // Request to generate the image
+      const imageResponse = await fetch('http://localhost:5000/generate-trip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ country, tripType }),
+      });
+
+      if (!imageResponse.ok) {
+        throw new Error('Failed to generate trip');
+      }
+
+      const imageData = await imageResponse.json();
+      setTripImage(imageData.imageUrl);
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,7 +77,24 @@ const TripForm = () => {
         <button type="submit">Generate Trip</button>
       </form>
 
-      {tripData && <TripDisplay tripData={tripData} />}
+      {loading && <p>Generating trip...</p>}
+      {error && <p>Error: {error}</p>}
+
+      {tripImage && (
+        <div>
+          <h2>Trip Image</h2>
+          <img src={tripImage} alt="Generated trip" style={{ width: '100%', maxWidth: '512px' }} />
+        </div>
+      )}
+
+      {zonesText && (
+        <div>
+          <h2>Trip Description</h2>
+          <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+            {zonesText}
+          </pre>
+        </div>
+      )}
     </div>
   );
 };
