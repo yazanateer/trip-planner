@@ -19,13 +19,11 @@ h1, h2 {
   border-radius: 8px;
 }
 
-/* HomePage Styles */
 h1 {
   margin-bottom: 20px;
   font-size: 2.5em;
 }
 
-/* TripForm Styles */
 form {
   display: flex;
   flex-direction: column;
@@ -62,7 +60,6 @@ button:hover {
   background-color: #0056b3;
 }
 
-/* TripDisplay Styles */
 .trip-display {
   margin-top: 30px;
 }
@@ -84,9 +81,9 @@ button:hover {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/* MapComponent Styles */
 #map {
   margin-top: 20px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+ 
